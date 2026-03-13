@@ -38,7 +38,7 @@ Data cleaning involved:
 The final cleaned dataset is saved as: data/cleaned/nyts_2021_2023_clean.csv
 
 ### Phase 1 Model (Proof of Concept)
-For Phase I, we build a baseline classification model to predict e-cigarette use using demographic and social media exposure variables.
+For Phase I, we build a baseline MLP model to predict e-cigarette use using demographic and social media exposure variables.
 
 Steps include:
 - Data preprocessing
@@ -47,9 +47,8 @@ Steps include:
 - Model training
 - Model evaluation
 
-Initial models explored:
+Some other models we plan to explore:
 - Logistic Regression
-- Multilayer Perceptron (MLP)
 - Bayesian Logistic Regression
 
 Performance will be evaluated using:
