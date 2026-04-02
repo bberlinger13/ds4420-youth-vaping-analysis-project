@@ -1,0 +1,60 @@
+```{r}
+library(here)
+library(ggplot2)
+library(brms)
+```
+
+```{r}
+df <- read.csv(here("data", "cleaned", "nyts_2021_2023_clean.csv"))
+head(df)
+```
+
+```{r}
+df$ecig_current <- as.integer(df$ecig_current)
+
+df$sex   <- factor(df$sex)
+df$grade <- factor(df$grade)
+df$year  <- factor(df$year)
+
+# for scaling purposes
+df$age         <- scale(df$age)
+df$sm_usage    <- scale(df$sm_usage)
+df$sm_freq     <- scale(df$sm_freq)
+df$post_freq   <- scale(df$post_freq)
+df$interact_freq <- scale(df$interact_freq)
+
+head(df)
+```
+
+```{r}
+
+model <- brm(
+  ecig_current ~ age + sex + grade +
+    sm_usage + sm_freq + post_freq + interact_freq +
+    platform_tt + platform_insta + platform_yt +
+    creator_influencers + creator_brands_sellers + creator_public_health,
+  
+  data = df,
+  family = bernoulli(link = "logit"),
+  
+  prior = c(
+    set_prior("normal(0, 1)", class = "b"),
+    set_prior("normal(0, 2)", class = "Intercept")
+  ),
+  
+  chains = 4,
+  iter = 2000,
+  seed = 123
+)
+
+```
+
+## Output
+
+```{r}
+summary(model)
+exp(fixef(model))
+
+plot(model)
+bayes_R2(model)
+```
