@@ -2,6 +2,8 @@
 library(here)
 library(ggplot2)
 library(brms)
+library(tidybayes)
+library(dplyr)
 ```
 
 ```{r}
@@ -49,12 +51,34 @@ model <- brm(
 
 ```
 
-## Output
+## Saving Results
 
 ```{r}
-summary(model)
-exp(fixef(model))
+# Posterior summary of all coefficients
+fixed_effects <- as.data.frame(fixef(model))
+fixed_effects$predictor <- rownames(fixed_effects)
 
-plot(model)
-bayes_R2(model)
+# write.csv(fixed_effects, here("model", "fixed_effects.csv"), row.names = FALSE)
+```
+
+## Saving Results
+
+```{r}
+# Marginal predictions across a key variable, e.g. platform
+newdata <- expand.grid(
+  platform_tt = c(0, 1),
+  platform_insta = c(0, 1),
+  platform_yt = c(0, 1),
+  # hold others at reference/mean
+  age = 0, sex = "1", grade = "9",
+  sm_usage = 0, sm_freq = 0, post_freq = 0, interact_freq = 0,
+  creator_influencers = 0, creator_brands_sellers = 0, creator_public_health = 0
+)
+
+preds <- fitted(model, newdata = newdata)
+newdata$prob <- preds[, "Estimate"]
+newdata$lower <- preds[, "Q2.5"]
+newdata$upper <- preds[, "Q97.5"]
+
+# write.csv(newdata, here("model", "predicted_probs.csv"), row.names = FALSE)
 ```
