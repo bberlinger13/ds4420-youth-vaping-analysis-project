@@ -51,8 +51,7 @@ model <- brm(
 
 ```
 
-## Saving Results
-
+## Output
 ```{r}
 # Posterior summary of all coefficients
 fixed_effects <- as.data.frame(fixef(model))
