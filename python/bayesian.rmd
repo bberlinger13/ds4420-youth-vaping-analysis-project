@@ -50,7 +50,6 @@ model <- brm(
 ```
 
 ## Output
-
 ```{r}
 summary(model)
 exp(fixef(model))
