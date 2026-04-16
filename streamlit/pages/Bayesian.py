@@ -18,7 +18,7 @@ def page01():
 
     fixed_effects, predicted_probs = load_data()
 
-    st.title("Youth E-Cigarette Use - Model Results")
+    st.title("Bayesian Logistic Regression Model Results")
 
     st.subheader("Model Coefficients")
     st.dataframe(fixed_effects)
