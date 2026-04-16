@@ -2,6 +2,10 @@
 
 import streamlit as st
 import pandas as pd
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+IMAGE_DIR = BASE_DIR / "images"
 
 st.set_page_config(page_title="MLP Results", layout="wide")
 
@@ -80,7 +84,7 @@ with col2:
     """)
 
 st.markdown("### Training Loss Curve")
-st.image("images/loss_curve.png", caption="Training Loss Over Epochs")
+st.image(str(IMAGE_DIR / "loss_curve.png"), caption="Training Loss Over Epochs")
 
 st.markdown("### Confusion Matrix")
-st.image("images/confusion_matrix.png", caption="MLP Confusion Matrix")
+st.image(str(IMAGE_DIR / "confusion_matrix.png"), caption="MLP Confusion Matrices")

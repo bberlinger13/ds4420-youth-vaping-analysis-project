@@ -4,7 +4,7 @@ import numpy as np
 import time
 from pathlib import Path
 import plotly.graph_objects as go
-from pathlib import Path
+
 
 # function to create a sample data frame and display it
 def page01():
