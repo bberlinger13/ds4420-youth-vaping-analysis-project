@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
+from pathlib import Path
 
 import streamlit as st
 import pandas as pd
@@ -75,13 +76,15 @@ def home_page():
 
     st.markdown("### Dataset Preview")
     try:
-        df = pd.read_csv("../data/cleaned/nyts_2021_2023_clean.csv")
+        base_dir = Path(__file__).resolve().parent
+        data_path = base_dir.parent / "data" / "cleaned" / "nyts_2021_2023_clean.csv"
+        df = pd.read_csv(data_path)
         st.dataframe(df.head(), use_container_width=True)
-    except FileNotFoundError:
-        st.error("Could not find the cleaned dataset. Make sure the file path is correct.")
+    except Exception as e:
+        st.error(f"Could not load dataset: {e}")
 
     st.markdown("---")
     st.caption("Created by Blythe Berlinger and Sydney Schulz")
-
+    
 if __name__ == "__main__":
     home_page()
