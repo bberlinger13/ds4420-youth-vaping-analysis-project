@@ -10,9 +10,9 @@
 
 ## Project Overview
 This project analyzes youth vaping behavior in the United States using the 
-National Youth Tobacco Survey (NYTS) from 2021–2023. We examine how demographic 
+National Youth Tobacco Survey (NYTS) from 2021-2023. We examine how demographic 
 characteristics and social media exposure relate to e-cigarette use among 
-adolescents aged approximately 11–18. We clean and aggregate three years of 
+adolescents aged approximately 11-18. We clean and aggregate three years of 
 survey data, perform exploratory data analysis, and build two machine learning 
 models to predict and interpret e-cigarette use.
 
@@ -27,7 +27,7 @@ models to predict and interpret e-cigarette use.
 ---
 
 ## Dataset
-Data comes from the CDC National Youth Tobacco Survey (NYTS), waves 2021–2023.
+Data comes from the CDC National Youth Tobacco Survey (NYTS), waves 2021-2023.
 These are the first years to include content-specific social media exposure 
 questions. Raw data is available at:
 https://www.cdc.gov/tobacco/data_statistics/surveys/nyts/
@@ -86,7 +86,7 @@ Implemented in R using the `brms` package with Stan backend.
 **Priors:** Normal(0, 0.3) for coefficients, Normal(−2, 0.3) for intercept  
 **Chains:** 4 MCMC chains × 2,000 iterations (1,000 warmup)  
 **Convergence:** All R-hat = 1.00  
-**Bayesian R²:** 0.079 (95% CI: 0.071–0.086)  
+**Bayesian R²:** 0.079 (95% CI: 0.071-0.086)  
 
 **Key findings:**
 - Interaction frequency (OR = 1.29), posting frequency (OR = 1.27), and 
@@ -100,10 +100,10 @@ Implemented in R using the `brms` package with Stan backend.
 
 ## Key Findings
 Both models converged on the same core finding: **active engagement with 
-e-cigarette content on social media — not overall platform use — is the 
+e-cigarette content on social media (not overall platform use) is the 
 strongest behavioral predictor of adolescent vaping.** Snapchat and TikTok 
 were the dominant platforms among current users across all three years. 
-E-cigarette use rates were consistent across grade levels (42–48%), suggesting 
+E-cigarette use rates were consistent across grade levels (42-48%), suggesting 
 prevention efforts should target all grades, not just upperclassmen.
 
 ---
