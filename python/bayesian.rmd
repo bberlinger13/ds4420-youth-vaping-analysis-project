@@ -11,6 +11,7 @@ df <- read.csv(here("data", "cleaned", "nyts_2021_2023_clean.csv"))
 head(df)
 ```
 
+# prepping data
 ```{r}
 df$ecig_current <- as.integer(df$ecig_current)
 
@@ -19,15 +20,48 @@ df$grade <- factor(df$grade)
 df$year  <- factor(df$year)
 
 # for scaling purposes
-df$age         <- scale(df$age)
-df$sm_usage    <- scale(df$sm_usage)
-df$sm_freq     <- scale(df$sm_freq)
-df$post_freq   <- scale(df$post_freq)
-df$interact_freq <- scale(df$interact_freq)
+df$age           <- as.numeric(scale(df$age))
+df$sm_usage      <- as.numeric(scale(df$sm_usage))
+df$sm_freq       <- as.numeric(scale(df$sm_freq))
+df$post_freq     <- as.numeric(scale(df$post_freq))
+df$interact_freq <- as.numeric(scale(df$interact_freq))
 
 head(df)
 ```
 
+## Checking for multicolliniearty
+```{r}
+cor(df[, c("sm_usage","sm_freq","post_freq","interact_freq")])
+
+```
+
+## prior predictive check
+```{r}
+model_prior <- brm(
+  ecig_current ~ age + sex + grade +
+    sm_usage + sm_freq + post_freq + interact_freq +
+    platform_tt + platform_insta + platform_yt +
+    creator_influencers + creator_brands_sellers + creator_public_health,
+  
+  data = df,
+  family = bernoulli(link = "logit"),
+  
+prior = c(
+  set_prior("normal(0, 0.3)", class = "b"),        
+  set_prior("normal(-2, 0.3)", class = "Intercept") 
+),
+  
+  sample_prior = "only", 
+  chains = 4,
+  iter = 2000,
+  seed = 123
+)
+
+pp_check(model_prior, ndraws = 100)
+```
+
+
+## defining model
 ```{r}
 
 model <- brm(
@@ -40,8 +74,8 @@ model <- brm(
   family = bernoulli(link = "logit"),
   
   prior = c(
-    set_prior("normal(0, 1)", class = "b"),
-    set_prior("normal(0, 2)", class = "Intercept")
+    set_prior("normal(0, 0.3)", class = "b"),
+    set_prior("normal(-2, 0.3)", class = "Intercept")
   ),
   
   chains = 4,
@@ -51,25 +85,78 @@ model <- brm(
 
 ```
 
-## Output
+## Results
 ```{r}
-# Posterior summary of all coefficients
+summary(model)
+exp(fixef(model))
+
+plot(model)
+bayes_R2(model)
+
+```
+
+
+
+## Coefficient plot
+```{r}
 fixed_effects <- as.data.frame(fixef(model))
 fixed_effects$predictor <- rownames(fixed_effects)
 
-# write.csv(fixed_effects, here("model", "fixed_effects.csv"), row.names = FALSE)
+fixed_effects <- fixed_effects %>% filter(predictor != "Intercept", predictor != "grade8")
+
+fixed_effects$predictor <- recode(fixed_effects$predictor,
+  "age" = "Age", "sex2" = "Sex (Female vs. Male)", "grade2" = "Grade 7",
+  "grade3" = "Grade 8", "grade4" = "Grade 9", "grade5" = "Grade 10",
+  "grade6" = "Grade 11", "grade7" = "Grade 12", 
+  "sm_usage" = "SM Use (General)", "sm_freq" = "SM Frequency (E-cig Content)",
+  "post_freq" = "Posting Frequency (E-cig Content)", "interact_freq" = "Interaction Frequency (E-cig Content)",
+  "platform_tt" = "Platform: TikTok", "platform_insta" = "Platform: Instagram",
+  "platform_yt" = "Platform: YouTube", "creator_influencers" = "Creator: Influencers",
+  "creator_brands_sellers" = "Creator: Brands/Sellers", "creator_public_health"  = "Creator: Public Health"
+)
+
+
+ggplot(fixed_effects, aes(x = Estimate, y = reorder(predictor, Estimate))) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray40") +
+  geom_errorbarh(aes(xmin = Q2.5, xmax = Q97.5), height = 0.25, color = "steelblue") +
+  geom_point(color = "steelblue", size = 2.5) +
+  labs(
+    x     = "Log-Odds Estimate (95% Credible Interval)",
+    y     = NULL,
+    title = "Bayesian Logistic Regression: Predictors of Current E-Cigarette Use"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title       = element_text(hjust = 0.5, size = 13),
+    axis.text.y      = element_text(size = 10),
+    axis.text.x      = element_text(size = 10),
+    panel.grid.minor = element_blank()
+  )
+
+
+```
+
+
+## Output
+```{r}
+fixed_effects <- as.data.frame(fixef(model))
+fixed_effects$predictor <- rownames(fixed_effects)
+
+fixed_effects <- fixed_effects %>% filter(predictor != "Intercept",predictor != "grade8")
+
+write.csv(fixed_effects, here("python", "model_output", "fixed_effects.csv"), row.names = FALSE)
 ```
 
 ## Saving Results
 
 ```{r}
-# Marginal predictions across a key variable, e.g. platform
-newdata <- expand.grid(
-  platform_tt = c(0, 1),
-  platform_insta = c(0, 1),
-  platform_yt = c(0, 1),
-  # hold others at reference/mean
-  age = 0, sex = "1", grade = "9",
+
+newdata <- data.frame(
+  platform_tt    = c(0, 1, 0, 0),
+  platform_insta = c(0, 0, 1, 0),
+  platform_yt    = c(0, 0, 0, 1),
+  platform_label = c("None", "TikTok", "Instagram", "YouTube"),
+  age = 0, sex = "1", grade = "1",
   sm_usage = 0, sm_freq = 0, post_freq = 0, interact_freq = 0,
   creator_influencers = 0, creator_brands_sellers = 0, creator_public_health = 0
 )
@@ -79,5 +166,5 @@ newdata$prob <- preds[, "Estimate"]
 newdata$lower <- preds[, "Q2.5"]
 newdata$upper <- preds[, "Q97.5"]
 
-# write.csv(newdata, here("model", "predicted_probs.csv"), row.names = FALSE)
+write.csv(newdata, here("python", "model_output", "predicted_probs.csv"), row.names = FALSE)
 ```
